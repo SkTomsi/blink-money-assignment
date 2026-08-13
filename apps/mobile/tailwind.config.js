@@ -1,56 +1,39 @@
 /** @type {import('tailwindcss').Config} */
-const light = {
-	bg: "#F7F9F4",
-	bgElevated: "#FFFFFF",
-	surface: "#FFFFFF",
-	surfaceAlt: "#F0F3EA",
-	border: "#E3E8DA",
-	borderBright: "#CBD6BD",
-	primary: "#4E7A2E",
-	primaryDim: "#7CCB4E",
-	primaryDeep: "#3A5E22",
-	yellow: "#A87B1E",
-	yellowDeep: "#8F6A15",
-	gray: "#7C877F",
-	grayDeep: "#AEB8B0",
-	blue: "#3D7FD9",
-	blueDeep: "#2B62B0",
-	red: "#D9483C",
-	redDeep: "#B23C33",
-	textPrimary: "#151B11",
-	textSecondary: "#4C5646",
-	textMuted: "#8A9584",
-	white: "#FFFFFF",
-	black: "#000000",
+// Shared palette source of truth (see packages/theme/tokens.json).
+const { light } = require("@blink/theme/tokens.json");
+
+// "#RRGGBB" -> "R G B" so tokens can back `rgb(var(--color-x) / <alpha-value>)`.
+const channels = (color) => {
+	if (color.startsWith("#")) {
+		const hex = color.slice(1);
+		const r = parseInt(hex.slice(0, 2), 16);
+		const g = parseInt(hex.slice(2, 4), 16);
+		const b = parseInt(hex.slice(4, 6), 16);
+		return `${r} ${g} ${b}`;
+	}
+	return color;
 };
 
-const dark = {
-	bg: "#0A0E08",
-	bgElevated: "#10150C",
-	surface: "#161D10",
-	surfaceAlt: "#1C2514",
-	border: "#27321C",
-	borderBright: "#3A4A28",
-	primary: "#9FE870",
-	primaryDim: "#7CCB4E",
-	primaryDeep: "#4E7A2E",
-	yellow: "#F2C14E",
-	yellowDeep: "#B98A22",
-	gray: "#9BA8A2",
-	grayDeep: "#5C6A62",
-	blue: "#6FB8FF",
-	blueDeep: "#3D7FD9",
-	red: "#FF6B5E",
-	redDeep: "#C24A3E",
-	textPrimary: "#F2F7EC",
-	textSecondary: "#A7B39A",
-	textMuted: "#6E7A63",
-	white: "#FFFFFF",
-	black: "#000000",
-};
+// Semantic token names resolve to CSS variables. Solid colors keep the
+// `<alpha-value>` slot so opacity modifiers like `bg-primary/20` work.
+const toColors = (palette) =>
+	Object.fromEntries(
+		Object.entries(palette).map(([key, value]) => [
+			key,
+			value.startsWith("#")
+				? `rgb(var(--color-${key}) / <alpha-value>)`
+				: `var(--color-${key})`,
+		]),
+	);
 
-const toColors = (p) =>
-	Object.fromEntries(Object.entries(p).map(([k, v]) => [k, v]));
+// Default variable values on `:root` — the light theme before any `vars()` apply.
+const toVars = (palette) =>
+	Object.fromEntries(
+		Object.entries(palette).map(([key, value]) => [
+			`--color-${key}`,
+			channels(value),
+		]),
+	);
 
 module.exports = {
 	// NOTE: Update this to include the paths to all files that contain Nativewind classes.
@@ -59,13 +42,13 @@ module.exports = {
 	darkMode: "class",
 	theme: {
 		extend: {
-			colors: {
-				...toColors(light),
-				...Object.fromEntries(
-					Object.entries(dark).map(([k, v]) => [`${k}Dark`, v])
-				),
-			},
+			colors: toColors(light),
 		},
 	},
-	plugins: [],
+	plugins: [
+		({ addBase }) =>
+			addBase({
+				":root": toVars(light),
+			}),
+	],
 };

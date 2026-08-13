@@ -3,6 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { StatusBar } from "expo-status-bar";
 import * as SystemUI from "expo-system-ui";
 import { useColorScheme } from "nativewind";
+import { StyleSheet, View } from "react-native";
 import {
 	createContext,
 	type ReactNode,
@@ -11,6 +12,7 @@ import {
 	useMemo,
 	useState,
 } from "react";
+import { darkVars, lightVars } from "@/theme/themeVars";
 
 export type ThemePreference = "system" | "light" | "dark";
 
@@ -72,7 +74,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 	return (
 		<ThemeContext.Provider value={value}>
 			<StatusBar style={isDark ? "light" : "dark"} />
-			{children}
+			{/* CSS variables flow down: tokens like `bg-bg` re-resolve when the theme flips. */}
+			<View style={[styles.root, isDark ? darkVars : lightVars]}>
+				{children}
+			</View>
 		</ThemeContext.Provider>
 	);
 }
@@ -84,3 +89,9 @@ export function useTheme() {
 	}
 	return context;
 }
+
+const styles = StyleSheet.create({
+	root: {
+		flex: 1,
+	},
+});
