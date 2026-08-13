@@ -12,7 +12,7 @@ import type {
 import { USER_DIRECTORY } from "./users";
 
 export const CIRCLES = {
-	thomas: "c_thomas",
+	thomas: "c_family",
 	future: "c_future",
 	boys: "c_boys",
 } as const;
@@ -58,7 +58,7 @@ function checkIn(
 	userId: string,
 	date: Date,
 	amount: number,
-	frequency: "daily" | "monthly"
+	frequency: "daily" | "monthly",
 ): CheckIn {
 	return {
 		id: uid("ci"),
@@ -93,7 +93,7 @@ function notification(
 const allCircles: Circle[] = [
 	{
 		id: CIRCLES.thomas,
-		name: "Thomas Family",
+		name: "Family ❤️",
 		type: "family",
 		ownerId: "u_you",
 		goal: "Family Wealth",
@@ -104,12 +104,12 @@ const allCircles: Circle[] = [
 		contributionMode: "equal",
 		defaultAmount: 1000,
 		groupTarget: null,
-		inviteSlug: "thomas-family",
+		inviteSlug: "family",
 		createdAt: monthsAgo(8),
 	},
 	{
 		id: CIRCLES.future,
-		name: "Our Future 💛",
+		name: "Future Goals💛",
 		type: "couple",
 		ownerId: "u_you",
 		goal: "Home",

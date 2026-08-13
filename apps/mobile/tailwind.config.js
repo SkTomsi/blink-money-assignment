@@ -43,6 +43,16 @@ module.exports = {
 	theme: {
 		extend: {
 			colors: toColors(light),
+			// Design-token type scale (see packages/theme/src/index.ts).
+			fontSize: {
+				h1: ["44px", { fontWeight: "800", letterSpacing: "-0.8px", lineHeight: "50px" }],
+				h2: ["30px", { fontWeight: "800", letterSpacing: "-0.5px", lineHeight: "36px" }],
+				h3: ["22px", { fontWeight: "700", letterSpacing: "-0.3px", lineHeight: "28px" }],
+				h4: ["17px", { fontWeight: "700", lineHeight: "22px" }],
+				body: ["15px", { fontWeight: "400", lineHeight: "21px" }],
+				caption: ["13px", { fontWeight: "500", lineHeight: "18px" }],
+				micro: ["11px", { fontWeight: "600", letterSpacing: "0.4px", lineHeight: "14px" }],
+			},
 		},
 	},
 	plugins: [

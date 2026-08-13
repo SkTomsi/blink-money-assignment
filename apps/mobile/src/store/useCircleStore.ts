@@ -12,6 +12,7 @@ import {
 	getPeriodProgress,
 	getPersonalStreak,
 	getTotalInvested,
+	getUser,
 	groupFeed,
 	isStreakAtRisk,
 	MILESTONES,
@@ -43,6 +44,7 @@ import type {
 	DB,
 	Notification,
 	ReactionEmoji,
+	User,
 } from "../types";
 
 type State = {
@@ -285,19 +287,38 @@ export function useCurrentMember(circleId: string): CircleMember | null {
 	return db ? (getMemberByUser(db, circleId, CURRENT_USER.id) ?? null) : null;
 }
 
+export function useUser(userId: string) {
+	const db = useCircleStore((s) => s.db);
+	if (!db) return null;
+	return getUser(db, userId) ?? null;
+}
+
+export function useUserMap(): Record<string, User> {
+	const db = useCircleStore((s) => s.db);
+	const map: Record<string, User> = {};
+	for (const user of db?.users ?? []) {
+		map[user.id] = user;
+	}
+	return map;
+}
+
 export function useOverview(circleId: string) {
 	const db = useCircleStore((s) => s.db);
 	if (!db) return null;
 	const circle = getCircle(db, circleId);
 	if (!circle) return null;
 	const members = getActiveMembers(db, circleId);
-	const total = getTotalInvested(
-		db.checkIns.filter((c) => c.circleId === circleId),
+	const circleCheckIns = db.checkIns.filter((c) => c.circleId === circleId);
+	const total = getTotalInvested(circleCheckIns);
+	const progress = getPeriodProgress(
+		circle,
+		members,
+		circleCheckIns,
+		new Date(),
 	);
-	const progress = getPeriodProgress(circle, members, db.checkIns, new Date());
 	const goal = getGoalProgress(circle, total);
-	const streak = getCircleStreak(circle, members, db.checkIns, new Date());
-	const atRisk = isStreakAtRisk(circle, members, db.checkIns, new Date());
+	const streak = getCircleStreak(circle, members, circleCheckIns, new Date());
+	const atRisk = isStreakAtRisk(circle, members, circleCheckIns, new Date());
 	return { circle, members, total, progress, goal, streak, atRisk };
 }
 
