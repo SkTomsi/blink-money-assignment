@@ -1,5 +1,5 @@
-import { Ionicons } from "@expo/vector-icons";
 import { colors, colorsLight } from "@blink/theme";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { Pressable, Text, View } from "react-native";
 import { useTheme } from "@/theme/ThemeProvider";
@@ -49,10 +49,8 @@ export function StepperHeader({
 					<View className="h-10 w-10" />
 				)}
 				<View className="flex-1">
-					<Text className="text-h2 text-textPrimary">{title}</Text>
-					<Text className="mt-0.5 text-body text-textSecondary">
-						{subtitle}
-					</Text>
+					<Text className="text-h3 text-textPrimary">{title}</Text>
+					<Text className="mt-0.5 text-md text-textSecondary">{subtitle}</Text>
 				</View>
 			</View>
 			<View className="flex-row gap-1.5">

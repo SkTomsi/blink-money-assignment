@@ -91,23 +91,6 @@ export default function ProfileScreen() {
 					<Text className="mb-3 text-caption font-semibold uppercase tracking-wide text-textMuted">
 						Prototype
 					</Text>
-					<View className="flex-row items-center justify-between">
-						<View className="flex-1">
-							<Text className="text-body font-semibold text-textPrimary">
-								Simulate offline
-							</Text>
-							<Text className="text-caption text-textSecondary">
-								Mutations will fail like a real API
-							</Text>
-						</View>
-						<Switch
-							value={offline}
-							onValueChange={setOffline}
-							trackColor={{ true: pal.primary, false: pal.borderBright }}
-							thumbColor="#FFFFFF"
-						/>
-					</View>
-					<View className="my-3 h-px bg-border" />
 					<Pressable
 						onPress={onReset}
 						disabled={resetting}
@@ -118,7 +101,7 @@ export default function ProfileScreen() {
 							{resetting ? "Resetting…" : "Reset demo data"}
 						</Text>
 					</Pressable>
-					<Text className="mt-3 text-center text-micro text-textMuted">
+					<Text className="mt-5 text-center text-micro text-textMuted">
 						Wealth Circle prototype · mock data stored locally
 					</Text>
 				</View>

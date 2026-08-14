@@ -479,7 +479,7 @@ function NudgeButton({
 		<Pressable
 			onPress={onPress}
 			disabled={nudged || loading || disabledSelf}
-			className="min-w-[74px] items-center justify-center rounded-full border border-primary bg-primarySoft px-3 py-1.5"
+			className="min-w-[74px] items-center justify-center rounded-full bg-primarySoft px-3 py-1.5"
 			style={({ pressed }) =>
 				pressed && !disabledSelf && { transform: [{ scale: 0.96 }] }
 			}
@@ -487,14 +487,14 @@ function NudgeButton({
 			{disabledSelf ? (
 				<Text className="text-caption text-textSecondary">○ Due</Text>
 			) : nudged ? (
-				<Text className="text-micro font-semibold text-primaryDeep">
-					Nudged ✓
+				<Text className="text-micro font-semibold text-primary">
+					Nudged 👉🏻
 				</Text>
 			) : loading ? (
 				<ActivityIndicator size={12} color="#4E7A2E" />
 			) : (
-				<Text className="text-micro font-semibold text-primaryDeep">
-					{label}
+				<Text className="text-micro font-semibold text-primary">
+					{label} 👉🏻
 				</Text>
 			)}
 		</Pressable>

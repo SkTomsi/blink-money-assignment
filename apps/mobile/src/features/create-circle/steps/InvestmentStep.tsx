@@ -89,16 +89,16 @@ export function InvestmentStep({
 
 				<View className="gap-3 rounded-2xl bg-primarySoft p-4">
 					<View className="flex-row items-center justify-between">
-						<Text className="text-caption font-semibold uppercase tracking-wide text-primaryDeep">
+						<Text className="text-caption font-semibold uppercase tracking-wide text-textPrimary">
 							📈 BlinkMoney SIP
 						</Text>
 						<View className="rounded-full bg-primary px-2 py-0.5">
-							<Text className="text-caption font-semibold text-white">
+							<Text className="text-caption font-semibold text-white dark:text-black">
 								~{SIP_ANNUAL_RATE_PCT}% p.a.
 							</Text>
 						</View>
 					</View>
-					<Text className="text-h4 font-bold text-primaryDeep">
+					<Text className="text-h2 font-bold text-primary">
 						{projection > 0 ? `≈ ${formatINR(projection)}` : "—"}
 					</Text>
 					<Text className="text-caption text-textMuted">
@@ -108,11 +108,7 @@ export function InvestmentStep({
 					</Text>
 				</View>
 			</View>
-			<FooterButton
-				label="Continue"
-				disabled={!canContinue}
-				onPress={onNext}
-			/>
+			<FooterButton label="Continue" disabled={!canContinue} onPress={onNext} />
 		</Step>
 	);
 }

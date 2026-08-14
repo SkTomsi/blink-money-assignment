@@ -24,7 +24,7 @@ export function Chip({
 		>
 			<Text
 				className={`text-caption font-medium ${
-					selected ? "text-primaryDeep" : "text-textSecondary"
+					selected ? "text-primary" : "text-textSecondary"
 				}`}
 			>
 				{label}

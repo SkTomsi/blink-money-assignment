@@ -34,7 +34,7 @@ export function SegmentedControl<T extends string>({
 						>
 							<Text
 								className={`text-body font-semibold ${
-									active ? "text-primaryDeep" : "text-textSecondary"
+									active ? "text-primary" : "text-textSecondary"
 								}`}
 							>
 								{option.label}

@@ -2,7 +2,12 @@ import { useRouter } from "expo-router";
 import { Pressable, Text, View } from "react-native";
 import { Avatar } from "@/components/ui/Avatar";
 import { CURRENT_USER } from "@/data/users";
-import { useCircle, useMembers, useOverview, useUserMap } from "@/store/useCircleStore";
+import {
+	useCircle,
+	useMembers,
+	useOverview,
+	useUserMap,
+} from "@/store/useCircleStore";
 
 const TYPE_LABELS: Record<string, string> = {
 	family: "Family",
@@ -35,7 +40,9 @@ export function CircleCard({ circleId }: { circleId: string }) {
 
 	const { progress, streak, atRisk } = overview;
 	const selfDue = progress.dueUserIds.includes(CURRENT_USER.id);
-	const othersDue = progress.dueUserIds.filter((id) => id !== CURRENT_USER.id).length;
+	const othersDue = progress.dueUserIds.filter(
+		(id) => id !== CURRENT_USER.id,
+	).length;
 
 	return (
 		<Pressable
@@ -58,12 +65,12 @@ export function CircleCard({ circleId }: { circleId: string }) {
 					</Text>
 				</View>
 				{atRisk ? (
-					<View className="rounded-full bg-red/15 px-2.5 py-1">
-						<Text className="text-micro font-semibold text-red">At risk</Text>
+					<View className="rounded-full bg-red/15 size-8 flex flex-col items-center justify-center">
+						<Text className="text-micro font-semibold text-red">!</Text>
 					</View>
 				) : streak > 0 ? (
-					<View className="rounded-full bg-primarySoft px-2.5 py-1">
-						<Text className="text-micro font-semibold text-primaryDeep">
+					<View className="rounded-full bg-primarySoft px-2.5 py-2">
+						<Text className="text-micro font-semibold text-primary">
 							🔥 {streak} {streakUnit(circle.frequency)}
 							{streak !== 1 ? "s" : ""}
 						</Text>
