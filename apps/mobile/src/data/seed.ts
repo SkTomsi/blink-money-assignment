@@ -1,4 +1,10 @@
-import { addMonths, daysAgo, hoursAgo, monthsAgo, periodKeyFor } from "../lib/dates";
+import {
+	addMonths,
+	daysAgo,
+	hoursAgo,
+	monthsAgo,
+	periodKeyFor,
+} from "../lib/dates";
 import { uid } from "../lib/ids";
 import type { CheckIn, Circle, CircleMember, DB, Notification } from "../types";
 import { USER_DIRECTORY } from "./users";
@@ -67,7 +73,7 @@ const allCircles: Circle[] = [
 		id: CIRCLES.thomas,
 		name: "Family ❤️",
 		type: "family",
-		ownerId: "u_you",
+		ownerId: "u_me",
 		frequency: "monthly",
 		contributionAmount: 1000,
 		durationMonths: 12,
@@ -80,7 +86,7 @@ const allCircles: Circle[] = [
 		id: CIRCLES.future,
 		name: "Future Goals💛",
 		type: "couple",
-		ownerId: "u_you",
+		ownerId: "u_me",
 		frequency: "monthly",
 		contributionAmount: 4000,
 		durationMonths: 24,
@@ -93,7 +99,7 @@ const allCircles: Circle[] = [
 		id: CIRCLES.boys,
 		name: "The Boys",
 		type: "friends",
-		ownerId: "u_you",
+		ownerId: "u_me",
 		frequency: "daily",
 		contributionAmount: 100,
 		durationMonths: 2,
@@ -105,17 +111,16 @@ const allCircles: Circle[] = [
 ];
 
 const allMembers: CircleMember[] = [
-	// Thomas Family — you(owner), dad, mom, tomcy, sarah (all active)
-	member(CIRCLES.thomas, "u_you", { role: "owner", joinedAt: monthsAgo(8) }),
+	// Thomas Family — you(owner), dad, mom, sarah (all active)
+	member(CIRCLES.thomas, "u_me", { role: "owner", joinedAt: monthsAgo(8) }),
 	member(CIRCLES.thomas, "u_dad", { joinedAt: monthsAgo(7) }),
 	member(CIRCLES.thomas, "u_mom", { joinedAt: monthsAgo(7) }),
-	member(CIRCLES.thomas, "u_tomcy", { joinedAt: monthsAgo(5) }),
 	member(CIRCLES.thomas, "u_sarah", { joinedAt: monthsAgo(2) }),
 	// Our Future — you + partner
-	member(CIRCLES.future, "u_you", { role: "owner", joinedAt: monthsAgo(4) }),
+	member(CIRCLES.future, "u_me", { role: "owner", joinedAt: monthsAgo(4) }),
 	member(CIRCLES.future, "u_partner", { joinedAt: monthsAgo(4) }),
 	// The Boys — you, rahul, john, arjun active; maya invited
-	member(CIRCLES.boys, "u_you", { role: "owner", joinedAt: daysAgo(14) }),
+	member(CIRCLES.boys, "u_me", { role: "owner", joinedAt: daysAgo(14) }),
 	member(CIRCLES.boys, "u_rahul", { joinedAt: daysAgo(14) }),
 	member(CIRCLES.boys, "u_john", { joinedAt: daysAgo(12) }),
 	member(CIRCLES.boys, "u_arjun", { joinedAt: daysAgo(10) }),
@@ -126,26 +131,25 @@ function buildCheckIns(): CheckIn[] {
 	const out: CheckIn[] = [];
 	const now = new Date();
 
-	// Thomas Family — monthly, ₹1,000 each. Total must land on ₹42,000.
-	// months -8..-2: 5 members/mo with 2 misses (sarah @ -3, tomcy @ -5)
+	// Thomas Family — monthly, ₹1,000 each. Total must land on ₹34,000.
+	// months -8..-2: 4 members/mo with 1 miss (sarah @ -3)
 	const thomasMisses: Record<string, number[]> = {
 		u_sarah: [-3],
-		u_tomcy: [-5],
 	};
 	for (const offset of [-8, -7, -6, -5, -4, -3, -2]) {
 		const date = new Date(now.getFullYear(), now.getMonth() + offset, 10);
-		for (const userId of ["u_you", "u_dad", "u_mom", "u_tomcy", "u_sarah"]) {
+		for (const userId of ["u_me", "u_dad", "u_mom", "u_sarah"]) {
 			if ((thomasMisses[userId] ?? []).includes(offset)) continue;
 			out.push(checkIn(CIRCLES.thomas, userId, date, 1000, "monthly"));
 		}
 	}
-	// month -1: all 5
+	// month -1: all 4
 	const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 12);
-	for (const userId of ["u_you", "u_dad", "u_mom", "u_tomcy", "u_sarah"]) {
+	for (const userId of ["u_me", "u_dad", "u_mom", "u_sarah"]) {
 		out.push(checkIn(CIRCLES.thomas, userId, lastMonth, 1000, "monthly"));
 	}
-	// current month: you, mom, tomcy + dad yesterday (sarah due → streak at risk)
-	for (const userId of ["u_you", "u_mom", "u_tomcy"]) {
+	// current month: you, mom + dad yesterday (sarah due → streak at risk)
+	for (const userId of ["u_me", "u_mom"]) {
 		out.push(checkIn(CIRCLES.thomas, userId, now, 1000, "monthly"));
 	}
 	out.push(
@@ -161,10 +165,10 @@ function buildCheckIns(): CheckIn[] {
 	// Our Future — monthly, ₹4,000 each
 	for (const offset of [-3, -2, -1]) {
 		const date = new Date(now.getFullYear(), now.getMonth() + offset, 6);
-		out.push(checkIn(CIRCLES.future, "u_you", date, 4000, "monthly"));
+		out.push(checkIn(CIRCLES.future, "u_me", date, 4000, "monthly"));
 		out.push(checkIn(CIRCLES.future, "u_partner", date, 4000, "monthly"));
 	}
-	out.push(checkIn(CIRCLES.future, "u_you", now, 4000, "monthly"));
+	out.push(checkIn(CIRCLES.future, "u_me", now, 4000, "monthly"));
 	out.push(
 		checkIn(
 			CIRCLES.future,
@@ -178,11 +182,11 @@ function buildCheckIns(): CheckIn[] {
 	// The Boys — daily, ₹100/day. days -7..-1 all four; today you + rahul
 	for (let day = 1; day <= 7; day += 1) {
 		const date = new Date(now.getTime() - day * 86400000);
-		for (const userId of ["u_you", "u_rahul", "u_john", "u_arjun"]) {
+		for (const userId of ["u_me", "u_rahul", "u_john", "u_arjun"]) {
 			out.push(checkIn(CIRCLES.boys, userId, date, 100, "daily"));
 		}
 	}
-	out.push(checkIn(CIRCLES.boys, "u_you", now, 100, "daily"));
+	out.push(checkIn(CIRCLES.boys, "u_me", now, 100, "daily"));
 	out.push(checkIn(CIRCLES.boys, "u_rahul", now, 100, "daily"));
 
 	return out;
@@ -191,29 +195,18 @@ function buildCheckIns(): CheckIn[] {
 function buildNotifications(): Notification[] {
 	return [
 		notification(
-			"u_you",
+			"u_me",
 			"Sarah hasn't completed her investment",
 			"Family ❤️ · your streak is at risk",
 			"⚠️",
 			hoursAgo(1),
 		),
+		notification("u_me", "Rahul invested ₹100", "The Boys", "🔥", hoursAgo(2)),
+		notification("u_me", "Mom invested ₹1,000", "Family ❤️", "💰", hoursAgo(5), {
+			read: true,
+		}),
 		notification(
-			"u_you",
-			"Rahul invested ₹100",
-			"The Boys",
-			"🔥",
-			hoursAgo(2),
-		),
-		notification(
-			"u_you",
-			"Mom invested ₹1,000",
-			"Family ❤️",
-			"💰",
-			hoursAgo(5),
-			{ read: true },
-		),
-		notification(
-			"u_you",
+			"u_me",
 			"The Boys reached a 7-day streak",
 			"The Boys",
 			"🔥",
@@ -221,7 +214,7 @@ function buildNotifications(): Notification[] {
 			{ read: true },
 		),
 		notification(
-			"u_you",
+			"u_me",
 			"Family ❤️ crossed ₹25,000",
 			"Family ❤️",
 			"🎉",

@@ -1,4 +1,5 @@
-import { Alert, Pressable, Text, View } from "react-native";
+import { useRouter } from "expo-router";
+import { Pressable, Text, View } from "react-native";
 import { Avatar } from "@/components/ui/Avatar";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { formatINR } from "@/lib/format";
@@ -29,6 +30,7 @@ export function CircleCard({ circleId }: { circleId: string }) {
 	const overview = useOverview(circleId);
 	const members = useMembers(circleId);
 	const users = useUserMap();
+	const router = useRouter();
 
 	if (!circle || !overview) return null;
 
@@ -41,9 +43,7 @@ export function CircleCard({ circleId }: { circleId: string }) {
 
 	return (
 		<Pressable
-			onPress={() =>
-				Alert.alert(circle.name, "The circle detail screen ships in the next phase.")
-			}
+			onPress={() => router.push(`/circle/${circle.id}`)}
 			className="gap-3 rounded-2xl bg-surface p-4"
 			style={({ pressed }) =>
 				pressed && { transform: [{ scale: 0.985 }], opacity: 0.92 }

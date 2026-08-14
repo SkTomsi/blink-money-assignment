@@ -1,6 +1,6 @@
-import type { Circle, CircleMember, DB, Notification } from "../types";
+import type { CheckIn, Circle, CircleMember, DB, Notification } from "../types";
 import { ApiError } from "../types";
-import { addMonths, durationInPeriods, nowIso } from "../lib/dates";
+import { addMonths, durationInPeriods, nowIso, periodKeyFor } from "../lib/dates";
 import { uid } from "../lib/ids";
 
 export type CreateCircleInput = {
@@ -69,8 +69,7 @@ export function inviteMember(
 	db: DB,
 	circleId: string,
 	userId: string,
-): { db: DB } {
-	const circle = db.circles.find((c) => c.id === circleId);
+): { db: DB } {	const circle = db.circles.find((c) => c.id === circleId);
 	if (!circle) {
 		throw new ApiError("NOT_FOUND", "Circle not found");
 	}
@@ -103,4 +102,88 @@ export function inviteMember(
 			notifications: [...db.notifications, notification],
 		},
 	};
+}
+
+export function checkIn(
+	db: DB,
+	circleId: string,
+	userId: string,
+): { db: DB; checkIn: CheckIn } {
+	const circle = db.circles.find((c) => c.id === circleId);
+	if (!circle) {
+		throw new ApiError("NOT_FOUND", "Circle not found");
+	}
+	const member = db.members.find(
+		(m) => m.circleId === circleId && m.userId === userId && m.status === "active",
+	);
+	if (!member) {
+		throw new ApiError("VALIDATION", "You're not an active member");
+	}
+
+	const periodKey = periodKeyFor(new Date(), circle.frequency);
+	const existing = db.checkIns.find(
+		(c) =>
+			c.circleId === circleId && c.userId === userId && c.periodKey === periodKey,
+	);
+	if (existing) {
+		return { db, checkIn: existing };
+	}
+
+	const checkIn: CheckIn = {
+		id: uid("ci"),
+		circleId,
+		userId,
+		periodKey,
+		amount: circle.contributionAmount,
+		createdAt: nowIso(),
+	};
+
+	return { db: { ...db, checkIns: [...db.checkIns, checkIn] }, checkIn };
+}
+
+export function nudgeMember(
+	db: DB,
+	circleId: string,
+	targetUserId: string,
+	fromUserId: string,
+): { db: DB } {
+	const circle = db.circles.find((c) => c.id === circleId);
+	if (!circle) {
+		throw new ApiError("NOT_FOUND", "Circle not found");
+	}
+	if (targetUserId === fromUserId) {
+		throw new ApiError("VALIDATION", "You can't nudge yourself");
+	}
+	const member = db.members.find(
+		(m) =>
+			m.circleId === circleId &&
+			m.userId === targetUserId &&
+			m.status === "active",
+	);
+	if (!member) {
+		throw new ApiError("VALIDATION", "Not an active member");
+	}
+	const periodKey = periodKeyFor(new Date(), circle.frequency);
+	const alreadyInvested = db.checkIns.some(
+		(c) =>
+			c.circleId === circleId &&
+			c.userId === targetUserId &&
+			c.periodKey === periodKey,
+	);
+	if (alreadyInvested) {
+		throw new ApiError("VALIDATION", "They've already invested this period");
+	}
+
+	const fromUser = db.users.find((u) => u.id === fromUserId);
+	const notification: Notification = {
+		id: uid("n"),
+		userId: targetUserId,
+		title: `${fromUser?.name ?? "Someone"} nudged you`,
+		body: `${circle.name} is waiting on you.`,
+		icon: "🔔",
+		read: false,
+		createdAt: nowIso(),
+	};
+
+	return { db: { ...db, notifications: [...db.notifications, notification] } };
 }

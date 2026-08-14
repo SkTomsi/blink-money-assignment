@@ -14,12 +14,21 @@ import {
 } from "../lib/stats";
 import {
 	type CreateCircleInput,
+	checkIn as svcCheckIn,
 	createCircle as svcCreateCircle,
 	inviteMember as svcInviteMember,
+	nudgeMember as svcNudgeMember,
 } from "../services/circleService";
 import { clearDB, loadDB, saveDB } from "../services/db";
 import { markAllRead, markRead } from "../services/notificationService";
-import type { Circle, CircleMember, DB, Notification, User } from "../types";
+import type {
+	CheckIn,
+	Circle,
+	CircleMember,
+	DB,
+	Notification,
+	User,
+} from "../types";
 
 type State = {
 	db: DB | null;
@@ -30,6 +39,8 @@ type State = {
 	setOffline: (offline: boolean) => void;
 	createCircle: (input: CreateCircleInput) => Promise<Circle>;
 	inviteMember: (circleId: string, userId: string) => Promise<void>;
+	checkIn: (circleId: string) => Promise<CheckIn>;
+	nudgeMember: (circleId: string, userId: string) => Promise<void>;
 	markNotificationRead: (notificationId: string) => Promise<void>;
 	markAllNotificationsRead: () => Promise<void>;
 };
@@ -85,6 +96,27 @@ export const useCircleStore = create<State>()((set, get) => ({
 				notifications: result.db.notifications,
 			}),
 		);
+		await saveDB(get().db!);
+	},
+
+	checkIn: async (circleId) => {
+		const { db, offline } = get();
+		if (!db || offline) throw new Error("Offline");
+		const result = await mockRequest(() =>
+			svcCheckIn(db, circleId, CURRENT_USER.id),
+		);
+		set(mergeDB(get(), { checkIns: result.db.checkIns }));
+		await saveDB(get().db!);
+		return result.checkIn;
+	},
+
+	nudgeMember: async (circleId, userId) => {
+		const { db, offline } = get();
+		if (!db || offline) throw new Error("Offline");
+		const result = await mockRequest(() =>
+			svcNudgeMember(db, circleId, userId, CURRENT_USER.id),
+		);
+		set(mergeDB(get(), { notifications: result.db.notifications }));
 		await saveDB(get().db!);
 	},
 
@@ -150,7 +182,12 @@ export function useOverview(circleId: string) {
 	const members = getActiveMembers(db, circleId);
 	const circleCheckIns = db.checkIns.filter((c) => c.circleId === circleId);
 	const total = getTotalInvested(circleCheckIns);
-	const progress = getPeriodProgress(circle, members, circleCheckIns, new Date());
+	const progress = getPeriodProgress(
+		circle,
+		members,
+		circleCheckIns,
+		new Date(),
+	);
 	const goal = getGoalProgress(circle, total);
 	const streak = getCircleStreak(circle, members, circleCheckIns, new Date());
 	const atRisk = isStreakAtRisk(circle, members, circleCheckIns, new Date());
