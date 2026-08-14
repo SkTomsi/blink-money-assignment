@@ -1,23 +1,17 @@
-import { buildSeed } from "../src/data/seed";
-import { CIRCLES } from "../src/data/seed";
+import { buildSeed, CIRCLES } from "../src/data/seed";
 import { formatINR, formatCompactINR } from "../src/lib/format";
-import { getTotalInvested } from "../src/lib/stats";
+import { getActiveMembers, getTotalInvested } from "../src/lib/stats";
 import {
 	getCircleStreak,
 	isStreakAtRisk,
 	getPeriodProgress,
-	getActiveMembers,
-	getLastMilestone,
-	getPersonalStreak,
-	MILESTONES,
 } from "../src/lib/stats";
-import { getActiveChallenges } from "../src/services/challengeService";
+import { createCircle, inviteMember } from "../src/services/circleService";
 
 let failures = 0;
 
 function check(label: string, actual: unknown, expected: unknown) {
-	const pass =
-		JSON.stringify(actual) === JSON.stringify(expected);
+	const pass = JSON.stringify(actual) === JSON.stringify(expected);
 	if (!pass) {
 		failures += 1;
 		console.error(`✗ ${label} — expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
@@ -41,16 +35,6 @@ const thomasCheckIns = db.checkIns.filter((c) => c.circleId === CIRCLES.thomas);
 const thomasTotal = getTotalInvested(thomasCheckIns);
 check("Thomas total = ₹42,000", thomasTotal, 42000);
 
-// milestone: ₹25K crossed
-const lastMilestone = getLastMilestone(thomasTotal);
-check("Thomas last milestone = ₹25K", lastMilestone?.label, "₹25K");
-check(
-	"MILESTONES has ₹25K at index 1",
-	MILESTONES[1]?.label,
-	"₹25K"
-);
-
-// ---- Thomas streak: sarah due today → at risk, streak 2 ----
 const thomas = db.circles.find((c) => c.id === CIRCLES.thomas)!;
 const thomasMembers = getActiveMembers(db, CIRCLES.thomas);
 const thomasStreak = getCircleStreak(thomas, thomasMembers, thomasCheckIns, now);
@@ -61,16 +45,13 @@ const thomasProgress = getPeriodProgress(thomas, thomasMembers, thomasCheckIns, 
 check("Thomas current invested = 4,000", thomasProgress.invested, 4000);
 check("Thomas due = [sarah]", thomasProgress.dueUserIds, ["u_sarah"]);
 
-// ---- Our Future: streak 4, individual amounts ----
+// ---- Our Future: streak 4, same amount for everyone ----
 const futureCheckIns = db.checkIns.filter((c) => c.circleId === CIRCLES.future);
 const future = db.circles.find((c) => c.id === CIRCLES.future)!;
 const futureMembers = getActiveMembers(db, CIRCLES.future);
 const futureStreak = getCircleStreak(future, futureMembers, futureCheckIns, now);
 check("Future streak = 4", futureStreak, 4);
-const youFuture = futureMembers.find((m) => m.userId === "u_you");
-const partnerFuture = futureMembers.find((m) => m.userId === "u_partner");
-check("You contribute ₹5,000", youFuture?.contributionAmount, 5000);
-check("Partner contributes ₹3,000", partnerFuture?.contributionAmount, 3000);
+check("Future contribution = ₹4,000", future.contributionAmount, 4000);
 
 // ---- The Boys: daily, streak 7, john+arjun due today ----
 const boysCheckIns = db.checkIns.filter((c) => c.circleId === CIRCLES.boys);
@@ -86,32 +67,54 @@ check("Boys due = [john, arjun]", boysProgress.dueUserIds, ["u_john", "u_arjun"]
 const maya = db.members.find((m) => m.circleId === CIRCLES.boys && m.userId === "u_maya");
 check("Maya is invited", maya?.status, "invited");
 
-// ---- Challenges ----
-const boysChallenges = getActiveChallenges(db, CIRCLES.boys);
-check("Boys has no active challenges", boysChallenges.length, 0);
-const completedBoysChallenge = db.challenges.find(
-	(c) => c.circleId === CIRCLES.boys && c.status === "completed"
-);
-check("Boys has a completed 7-day challenge", completedBoysChallenge?.type, "7-day");
-
 // ---- Format ----
 check("formatINR(100000) = ₹1,00,000", formatINR(100000), "₹1,00,000");
 check("formatCompactINR(100000) = ₹1L", formatCompactINR(100000), "₹1L");
 check("formatCompactINR(500000) = ₹5L", formatCompactINR(500000), "₹5L");
 check("formatCompactINR(25000) = ₹25K", formatCompactINR(25000), "₹25K");
 
-// ---- Personal streak ----
-const youBoysStreak = getPersonalStreak("u_you", boys.frequency, boysCheckIns, now);
-check("You personal boys streak = 8", youBoysStreak, 8);
+// ---- Create circle: total = amount × periods ----
+const monthly = createCircle(buildSeed(), "u_you", {
+	name: "Test Circle",
+	type: "friends",
+	frequency: "monthly",
+	contributionAmount: 5000,
+	durationMonths: 24,
+});
+check("Monthly total = amount × months", monthly.circle.targetAmount, 5000 * 24);
+check("Monthly contribution stored", monthly.circle.contributionAmount, 5000);
 
-// ---- Reactions ----
-const milestoneActivity = db.activities.find(
-	(a) => a.circleId === CIRCLES.thomas && a.type === "milestone"
+const daily = createCircle(buildSeed(), "u_you", {
+	name: "Daily Circle",
+	type: "friends",
+	frequency: "daily",
+	contributionAmount: 100,
+	durationMonths: 1,
+});
+const days = Math.round(
+	(Date.parse(daily.circle.targetDate) - Date.now()) / 86400000,
 );
-check("Milestone activity has 🚀 reactions", milestoneActivity?.reactions["🚀"]?.length, 2);
+check("Daily total = amount × days", daily.circle.targetAmount, 100 * days);
+check("Owner member created as active", 
+	daily.db.members.find((m) => m.circleId === daily.circle.id)?.status,
+	"active");
+
+// ---- Invite ----
+const invited = inviteMember(monthly.db, monthly.circle.id, "u_dad");
+check(
+	"Invite creates invited member",
+	invited.db.members.find((m) => m.circleId === monthly.circle.id && m.userId === "u_dad")
+		?.status,
+	"invited",
+);
+check(
+	"Invite creates a notification",
+	invited.db.notifications.filter((n) => n.userId === "u_dad").length,
+	1,
+);
 
 if (failures === 0) {
-	console.log("\nAll phase-1 checks passed ✓");
+	console.log("\nAll checks passed ✓");
 } else {
 	console.error(`\n${failures} check(s) failed ✗`);
 	process.exit(1);

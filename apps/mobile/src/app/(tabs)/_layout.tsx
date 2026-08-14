@@ -1,5 +1,5 @@
-import { Ionicons } from "@expo/vector-icons";
 import { colors, colorsLight } from "@blink/theme";
+import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { useTheme } from "@/theme/ThemeProvider";
 

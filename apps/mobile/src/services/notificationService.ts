@@ -1,5 +1,3 @@
-import { nowIso } from "../lib/dates";
-import { uid } from "../lib/ids";
 import type { DB, Notification } from "../types";
 import { ApiError } from "../types";
 
@@ -34,28 +32,4 @@ export function markAllRead(db: DB, userId: string): { db: DB; count: number } {
 		return n;
 	});
 	return { db: { ...db, notifications }, count };
-}
-
-export function pushNotification(
-	db: DB,
-	userId: string,
-	title: string,
-	body: string,
-	icon: string,
-	circleId?: string,
-): { db: DB; notification: Notification } {
-	const notification: Notification = {
-		id: uid("n"),
-		userId,
-		circleId,
-		title,
-		body,
-		icon,
-		read: false,
-		createdAt: nowIso(),
-	};
-	return {
-		db: { ...db, notifications: [...db.notifications, notification] },
-		notification,
-	};
 }

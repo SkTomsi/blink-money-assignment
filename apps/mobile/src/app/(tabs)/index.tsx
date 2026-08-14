@@ -52,7 +52,7 @@ export default function HomeScreen() {
 					</Pressable>
 				}
 			/>
-			<View className="px-5">
+			<View className="px-5 mb-5">
 				<Pressable
 					onPress={() => router.push("/create-circle")}
 					className="flex-row items-center justify-center gap-2 rounded-xl bg-primary py-3.5"
@@ -87,8 +87,6 @@ export default function HomeScreen() {
 			</Screen>
 		);
 	}
-
-	console.log(circles);
 
 	return (
 		<Screen>

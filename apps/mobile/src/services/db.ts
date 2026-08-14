@@ -2,7 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { DB } from "../types";
 import { buildSeed } from "../data/seed";
 
-const DB_KEY = "blink.db.v1";
+const DB_KEY = "blink.db.v2";
 
 export async function loadDB(): Promise<DB> {
 	const raw = await AsyncStorage.getItem(DB_KEY);

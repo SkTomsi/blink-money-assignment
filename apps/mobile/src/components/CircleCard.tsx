@@ -10,6 +10,12 @@ const TYPE_LABELS: Record<string, string> = {
 	friends: "Friends",
 };
 
+const TYPE_EMOJIS: Record<string, string> = {
+	family: "🏡",
+	couple: "💛",
+	friends: "🤝",
+};
+
 const FREQ_LABELS: Record<string, string> = {
 	daily: "Daily",
 	monthly: "Monthly",
@@ -45,14 +51,14 @@ export function CircleCard({ circleId }: { circleId: string }) {
 		>
 			<View className="flex-row items-center gap-3">
 				<View className="h-11 w-11 items-center justify-center rounded-xl bg-primarySoft">
-					<Text className="text-xl">{circle.goalEmoji}</Text>
+					<Text className="text-xl">{TYPE_EMOJIS[circle.type] ?? "💰"}</Text>
 				</View>
 				<View className="flex-1">
 					<Text className="text-h4 text-textPrimary">{circle.name}</Text>
 					<Text className="mt-0.5 text-caption text-textMuted">
 						{TYPE_LABELS[circle.type] ?? circle.type} ·{" "}
 						{FREQ_LABELS[circle.frequency] ?? circle.frequency} ·{" "}
-						{members.length} members
+						{members.length} {members.length === 1 ? "member" : "members"}
 					</Text>
 				</View>
 				{atRisk ? (

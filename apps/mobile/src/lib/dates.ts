@@ -7,16 +7,8 @@ export function toKey(date: Date): string {
 	return `${y}-${m}-${d}`;
 }
 
-export function todayKey(): string {
-	return toKey(new Date());
-}
-
 export function monthKeyOf(date: Date): string {
 	return toKey(date).slice(0, 7);
-}
-
-export function currentMonthKey(): string {
-	return monthKeyOf(new Date());
 }
 
 export function addDays(date: Date, days: number): Date {
@@ -45,6 +37,19 @@ export function previousPeriod(
 		return toKey(new Date(y, m - 1, d - 1));
 	}
 	return toKey(new Date(y, m - 2, 1)).slice(0, 7);
+}
+
+/** Number of contribution periods in the circle duration. */
+export function durationInPeriods(
+	frequency: Frequency,
+	durationMonths: number,
+	targetDate: string,
+): number {
+	if (frequency === "monthly") return Math.max(1, durationMonths);
+	const days = Math.round(
+		(Date.parse(targetDate) - Date.now()) / 86400000,
+	);
+	return Math.max(1, days);
 }
 
 export function nowIso(): string {

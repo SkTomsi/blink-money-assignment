@@ -6,7 +6,7 @@ import { Screen } from "@/components/ui/Screen";
 import { ScreenHeader } from "@/components/ui/ScreenHeader";
 import { CURRENT_USER } from "@/data/users";
 import { useCircleStore } from "@/store/useCircleStore";
-import { useTheme, type ThemePreference } from "@/theme/ThemeProvider";
+import { type ThemePreference, useTheme } from "@/theme/ThemeProvider";
 
 const THEME_OPTIONS: { key: ThemePreference; label: string }[] = [
 	{ key: "system", label: "System" },
@@ -34,9 +34,15 @@ export default function ProfileScreen() {
 				<ScreenHeader title="Profile" subtitle="Your world, your settings" />
 
 				<View className="mx-5 flex-row items-center gap-3 rounded-2xl bg-surface p-4">
-					<Avatar color={CURRENT_USER.avatarColor} name={CURRENT_USER.name} size={48} />
+					<Avatar
+						color={CURRENT_USER.avatarColor}
+						name={CURRENT_USER.name}
+						size={48}
+					/>
 					<View className="flex-1">
-						<Text className="text-h4 text-textPrimary">{CURRENT_USER.name}</Text>
+						<Text className="text-h4 text-textPrimary">
+							{CURRENT_USER.name}
+						</Text>
 						<Text className="text-caption text-textMuted">
 							{CURRENT_USER.username}
 						</Text>
@@ -106,9 +112,7 @@ export default function ProfileScreen() {
 						onPress={onReset}
 						disabled={resetting}
 						className="items-center rounded-xl border border-border bg-bg py-3"
-						style={({ pressed }) =>
-							pressed && { transform: [{ scale: 0.98 }] }
-						}
+						style={({ pressed }) => pressed && { transform: [{ scale: 0.98 }] }}
 					>
 						<Text className="text-body font-semibold text-textPrimary">
 							{resetting ? "Resetting…" : "Reset demo data"}

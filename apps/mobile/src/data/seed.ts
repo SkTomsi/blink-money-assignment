@@ -1,14 +1,6 @@
-import { daysAgo, hoursAgo, monthsAgo, periodKeyFor } from "../lib/dates";
+import { addMonths, daysAgo, hoursAgo, monthsAgo, periodKeyFor } from "../lib/dates";
 import { uid } from "../lib/ids";
-import type {
-	Activity,
-	Challenge,
-	CheckIn,
-	Circle,
-	CircleMember,
-	DB,
-	Notification,
-} from "../types";
+import type { CheckIn, Circle, CircleMember, DB, Notification } from "../types";
 import { USER_DIRECTORY } from "./users";
 
 export const CIRCLES = {
@@ -27,28 +19,8 @@ function member(
 		circleId,
 		userId,
 		role: "member",
-		contributionAmount: 0,
 		status: "active",
-		showContribution: false,
 		joinedAt: monthsAgo(2),
-		...overrides,
-	};
-}
-
-function activity(
-	circleId: string,
-	userId: string,
-	type: Activity["type"],
-	createdAt: string,
-	overrides: Partial<Activity> = {},
-): Activity {
-	return {
-		id: uid("a"),
-		circleId,
-		userId,
-		type,
-		reactions: {},
-		createdAt,
 		...overrides,
 	};
 }
@@ -96,14 +68,11 @@ const allCircles: Circle[] = [
 		name: "Family ❤️",
 		type: "family",
 		ownerId: "u_you",
-		goal: "Family Wealth",
-		goalEmoji: "🏡",
+		frequency: "monthly",
+		contributionAmount: 1000,
+		durationMonths: 12,
 		targetAmount: 100000,
 		targetDate: "2027-12-31T00:00:00.000Z",
-		frequency: "monthly",
-		contributionMode: "equal",
-		defaultAmount: 1000,
-		groupTarget: null,
 		inviteSlug: "family",
 		createdAt: monthsAgo(8),
 	},
@@ -112,14 +81,11 @@ const allCircles: Circle[] = [
 		name: "Future Goals💛",
 		type: "couple",
 		ownerId: "u_you",
-		goal: "Home",
-		goalEmoji: "🏠",
+		frequency: "monthly",
+		contributionAmount: 4000,
+		durationMonths: 24,
 		targetAmount: 5000000,
 		targetDate: "2028-12-31T00:00:00.000Z",
-		frequency: "monthly",
-		contributionMode: "individual",
-		defaultAmount: 0,
-		groupTarget: null,
 		inviteSlug: "our-future",
 		createdAt: monthsAgo(4),
 	},
@@ -128,16 +94,11 @@ const allCircles: Circle[] = [
 		name: "The Boys",
 		type: "friends",
 		ownerId: "u_you",
-		goal: "Build a consistent habit",
-		goalEmoji: "🎯",
-		targetAmount: 5000,
-		targetDate: new Date(
-			new Date().setMonth(new Date().getMonth() + 2),
-		).toISOString(),
 		frequency: "daily",
-		contributionMode: "individual",
-		defaultAmount: 100,
-		groupTarget: null,
+		contributionAmount: 100,
+		durationMonths: 2,
+		targetAmount: 5000,
+		targetDate: addMonths(new Date(), 2).toISOString(),
 		inviteSlug: "the-boys",
 		createdAt: daysAgo(14),
 	},
@@ -145,67 +106,20 @@ const allCircles: Circle[] = [
 
 const allMembers: CircleMember[] = [
 	// Thomas Family — you(owner), dad, mom, tomcy, sarah (all active)
-	member(CIRCLES.thomas, "u_you", {
-		role: "owner",
-		contributionAmount: 1000,
-		showContribution: true,
-		joinedAt: monthsAgo(8),
-	}),
-	member(CIRCLES.thomas, "u_dad", {
-		contributionAmount: 1000,
-		joinedAt: monthsAgo(7),
-	}),
-	member(CIRCLES.thomas, "u_mom", {
-		contributionAmount: 1000,
-		joinedAt: monthsAgo(7),
-	}),
-	member(CIRCLES.thomas, "u_tomcy", {
-		contributionAmount: 1000,
-		joinedAt: monthsAgo(5),
-	}),
-	member(CIRCLES.thomas, "u_sarah", {
-		contributionAmount: 1000,
-		joinedAt: monthsAgo(2),
-	}),
+	member(CIRCLES.thomas, "u_you", { role: "owner", joinedAt: monthsAgo(8) }),
+	member(CIRCLES.thomas, "u_dad", { joinedAt: monthsAgo(7) }),
+	member(CIRCLES.thomas, "u_mom", { joinedAt: monthsAgo(7) }),
+	member(CIRCLES.thomas, "u_tomcy", { joinedAt: monthsAgo(5) }),
+	member(CIRCLES.thomas, "u_sarah", { joinedAt: monthsAgo(2) }),
 	// Our Future — you + partner
-	member(CIRCLES.future, "u_you", {
-		role: "owner",
-		contributionAmount: 5000,
-		showContribution: true,
-		joinedAt: monthsAgo(4),
-	}),
-	member(CIRCLES.future, "u_partner", {
-		contributionAmount: 3000,
-		showContribution: true,
-		joinedAt: monthsAgo(4),
-	}),
+	member(CIRCLES.future, "u_you", { role: "owner", joinedAt: monthsAgo(4) }),
+	member(CIRCLES.future, "u_partner", { joinedAt: monthsAgo(4) }),
 	// The Boys — you, rahul, john, arjun active; maya invited
-	member(CIRCLES.boys, "u_you", {
-		role: "owner",
-		contributionAmount: 100,
-		showContribution: true,
-		joinedAt: daysAgo(14),
-	}),
-	member(CIRCLES.boys, "u_rahul", {
-		contributionAmount: 100,
-		showContribution: true,
-		joinedAt: daysAgo(14),
-	}),
-	member(CIRCLES.boys, "u_john", {
-		contributionAmount: 100,
-		showContribution: true,
-		joinedAt: daysAgo(12),
-	}),
-	member(CIRCLES.boys, "u_arjun", {
-		contributionAmount: 100,
-		showContribution: true,
-		joinedAt: daysAgo(10),
-	}),
-	member(CIRCLES.boys, "u_maya", {
-		contributionAmount: 100,
-		status: "invited",
-		joinedAt: daysAgo(2),
-	}),
+	member(CIRCLES.boys, "u_you", { role: "owner", joinedAt: daysAgo(14) }),
+	member(CIRCLES.boys, "u_rahul", { joinedAt: daysAgo(14) }),
+	member(CIRCLES.boys, "u_john", { joinedAt: daysAgo(12) }),
+	member(CIRCLES.boys, "u_arjun", { joinedAt: daysAgo(10) }),
+	member(CIRCLES.boys, "u_maya", { status: "invited", joinedAt: daysAgo(2) }),
 ];
 
 function buildCheckIns(): CheckIn[] {
@@ -230,7 +144,7 @@ function buildCheckIns(): CheckIn[] {
 	for (const userId of ["u_you", "u_dad", "u_mom", "u_tomcy", "u_sarah"]) {
 		out.push(checkIn(CIRCLES.thomas, userId, lastMonth, 1000, "monthly"));
 	}
-	// current month: you, dad, mom, tomcy (sarah due → streak at risk)
+	// current month: you, mom, tomcy + dad yesterday (sarah due → streak at risk)
 	for (const userId of ["u_you", "u_mom", "u_tomcy"]) {
 		out.push(checkIn(CIRCLES.thomas, userId, now, 1000, "monthly"));
 	}
@@ -244,19 +158,19 @@ function buildCheckIns(): CheckIn[] {
 		),
 	);
 
-	// Our Future — monthly, individual (you 5000 / partner 3000)
+	// Our Future — monthly, ₹4,000 each
 	for (const offset of [-3, -2, -1]) {
 		const date = new Date(now.getFullYear(), now.getMonth() + offset, 6);
-		out.push(checkIn(CIRCLES.future, "u_you", date, 5000, "monthly"));
-		out.push(checkIn(CIRCLES.future, "u_partner", date, 3000, "monthly"));
+		out.push(checkIn(CIRCLES.future, "u_you", date, 4000, "monthly"));
+		out.push(checkIn(CIRCLES.future, "u_partner", date, 4000, "monthly"));
 	}
-	out.push(checkIn(CIRCLES.future, "u_you", now, 5000, "monthly"));
+	out.push(checkIn(CIRCLES.future, "u_you", now, 4000, "monthly"));
 	out.push(
 		checkIn(
 			CIRCLES.future,
 			"u_partner",
 			new Date(now.getTime() - 86400000),
-			3000,
+			4000,
 			"monthly",
 		),
 	);
@@ -274,156 +188,14 @@ function buildCheckIns(): CheckIn[] {
 	return out;
 }
 
-function buildActivities(): Activity[] {
-	const out: Activity[] = [];
-
-	// Thomas Family
-	out.push(
-		activity(CIRCLES.thomas, "u_you", "goal_created", monthsAgo(8), {
-			metadata: { title: "Family Wealth" },
-		}),
-	);
-	out.push(activity(CIRCLES.thomas, "u_dad", "member_joined", monthsAgo(7)));
-	out.push(activity(CIRCLES.thomas, "u_mom", "member_joined", monthsAgo(7)));
-	out.push(activity(CIRCLES.thomas, "u_tomcy", "member_joined", monthsAgo(5)));
-	out.push(activity(CIRCLES.thomas, "u_sarah", "member_joined", monthsAgo(2)));
-	out.push(
-		activity(CIRCLES.thomas, "u_you", "milestone", monthsAgo(3), {
-			metadata: { milestone: "₹25K", title: "Thomas Family crossed ₹25,000" },
-			reactions: { "🚀": ["u_you", "u_dad"] },
-		}),
-	);
-	out.push(
-		activity(CIRCLES.thomas, "u_tomcy", "contribution_completed", daysAgo(2), {
-			amount: 1000,
-			reactions: { "❤️": ["u_you"] },
-		}),
-	);
-	out.push(
-		activity(CIRCLES.thomas, "u_dad", "contribution_completed", daysAgo(1), {
-			amount: 1000,
-			reactions: { "❤️": ["u_you", "u_mom"], "🔥": ["u_tomcy"] },
-		}),
-	);
-	out.push(
-		activity(CIRCLES.thomas, "u_you", "investment", daysAgo(1), {
-			amount: 1000,
-		}),
-	);
-	out.push(
-		activity(CIRCLES.thomas, "u_mom", "investment", daysAgo(1), {
-			amount: 1000,
-			reactions: { "👏": ["u_you"] },
-		}),
-	);
-	// borrowing + repayment (no amounts — PRD §14)
-	out.push(activity(CIRCLES.thomas, "u_tomcy", "borrowing", daysAgo(4)));
-	out.push(activity(CIRCLES.thomas, "u_tomcy", "repayment", daysAgo(3)));
-
-	// Our Future
-	out.push(
-		activity(CIRCLES.future, "u_you", "goal_created", monthsAgo(4), {
-			metadata: { title: "Home" },
-		}),
-	);
-	out.push(
-		activity(CIRCLES.future, "u_you", "investment_increment", monthsAgo(2), {
-			metadata: { from: 4000, to: 5000 },
-		}),
-	);
-	out.push(
-		activity(
-			CIRCLES.future,
-			"u_partner",
-			"contribution_completed",
-			daysAgo(1),
-			{
-				amount: 3000,
-				reactions: { "❤️": ["u_you"], "👏": ["u_you"] },
-			},
-		),
-	);
-	out.push(
-		activity(CIRCLES.future, "u_you", "investment", daysAgo(1), {
-			amount: 5000,
-		}),
-	);
-
-	// The Boys
-	out.push(
-		activity(CIRCLES.boys, "u_you", "challenge_completed", daysAgo(1), {
-			metadata: { challenge: "7-Day Challenge" },
-			reactions: { "🚀": ["u_you", "u_rahul", "u_john", "u_arjun"] },
-		}),
-	);
-	out.push(
-		activity(CIRCLES.boys, "u_you", "streak", daysAgo(1), {
-			metadata: { title: "The circle reached a 7-day streak" },
-			reactions: { "🔥": ["u_you", "u_rahul"] },
-		}),
-	);
-	out.push(
-		activity(CIRCLES.boys, "u_john", "investment", daysAgo(1), {
-			amount: 100,
-		}),
-	);
-	out.push(
-		activity(CIRCLES.boys, "u_arjun", "investment", daysAgo(1), {
-			amount: 100,
-			reactions: { "👏": ["u_you"] },
-		}),
-	);
-	out.push(
-		activity(CIRCLES.boys, "u_you", "investment", hoursAgo(2), {
-			amount: 100,
-		}),
-	);
-	out.push(
-		activity(CIRCLES.boys, "u_rahul", "investment", hoursAgo(1), {
-			amount: 100,
-			reactions: { "🔥": ["u_you"] },
-		}),
-	);
-
-	return out;
-}
-
-function buildChallenges(): Challenge[] {
-	return [
-		{
-			id: uid("ch"),
-			circleId: CIRCLES.boys,
-			type: "7-day",
-			title: "Invest every day for 7 days",
-			target: 7,
-			startDate: daysAgo(8),
-			endDate: daysAgo(1),
-			status: "completed",
-		},
-		{
-			id: uid("ch"),
-			circleId: CIRCLES.thomas,
-			type: "10k",
-			title: "₹10K Challenge — invest ₹10,000 together",
-			target: 10000,
-			startDate: daysAgo(6),
-			endDate: new Date(
-				new Date().setDate(new Date().getDate() + 8),
-			).toISOString(),
-			status: "active",
-		},
-	];
-}
-
 function buildNotifications(): Notification[] {
 	return [
 		notification(
 			"u_you",
 			"Sarah hasn't completed her investment",
-			"Thomas Family · your streak is at risk",
+			"Family ❤️ · your streak is at risk",
 			"⚠️",
 			hoursAgo(1),
-			{ circleId: CIRCLES.thomas },
 		),
 		notification(
 			"u_you",
@@ -431,15 +203,14 @@ function buildNotifications(): Notification[] {
 			"The Boys",
 			"🔥",
 			hoursAgo(2),
-			{ circleId: CIRCLES.boys },
 		),
 		notification(
 			"u_you",
 			"Mom invested ₹1,000",
-			"Thomas Family",
+			"Family ❤️",
 			"💰",
 			hoursAgo(5),
-			{ circleId: CIRCLES.thomas, read: true },
+			{ read: true },
 		),
 		notification(
 			"u_you",
@@ -447,15 +218,15 @@ function buildNotifications(): Notification[] {
 			"The Boys",
 			"🔥",
 			hoursAgo(8),
-			{ circleId: CIRCLES.boys, read: true },
+			{ read: true },
 		),
 		notification(
 			"u_you",
-			"Thomas Family crossed ₹25,000",
-			"Thomas Family",
+			"Family ❤️ crossed ₹25,000",
+			"Family ❤️",
 			"🎉",
 			daysAgo(1),
-			{ circleId: CIRCLES.thomas, read: true },
+			{ read: true },
 		),
 	];
 }
@@ -465,9 +236,7 @@ export function buildSeed(): DB {
 		users: USER_DIRECTORY,
 		circles: allCircles,
 		members: allMembers,
-		activities: buildActivities(),
 		checkIns: buildCheckIns(),
-		challenges: buildChallenges(),
 		notifications: buildNotifications(),
 	};
 }
