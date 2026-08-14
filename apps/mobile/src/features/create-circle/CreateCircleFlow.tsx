@@ -59,6 +59,7 @@ export function CreateCircleFlow() {
 						{...stepProps}
 						periods={flow.periods}
 						total={flow.total}
+						projection={flow.projection}
 						targetDate={targetDate}
 					/>
 				)}

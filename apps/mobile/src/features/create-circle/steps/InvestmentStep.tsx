@@ -3,6 +3,7 @@ import { Chip } from "@/components/ui/Chip";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { TextField } from "@/components/ui/TextField";
 import { formatINR } from "@/lib/format";
+import { SIP_ANNUAL_RATE_PCT } from "@/lib/returns";
 import { DURATIONS, monthYearLabel, periodUnit } from "../constants";
 import { parseAmount } from "../draft";
 import { FooterButton, Step, type StepProps } from "../StepShell";
@@ -14,10 +15,12 @@ export function InvestmentStep({
 	canContinue,
 	periods,
 	total,
+	projection,
 	targetDate,
 }: StepProps & {
 	periods: number;
 	total: number;
+	projection: number;
 	targetDate: string;
 }) {
 	const contribution = parseAmount(draft.contribution);
@@ -80,7 +83,28 @@ export function InvestmentStep({
 					</Text>
 					<Text className="mt-1 text-caption text-textMuted">
 						Everyone in the circle invests the same, by{" "}
-						{monthYearLabel(targetDate)} · via BlinkMoney SIPs
+						{monthYearLabel(targetDate)}
+					</Text>
+				</View>
+
+				<View className="gap-3 rounded-2xl bg-primarySoft p-4">
+					<View className="flex-row items-center justify-between">
+						<Text className="text-caption font-semibold uppercase tracking-wide text-primaryDeep">
+							📈 BlinkMoney SIP
+						</Text>
+						<View className="rounded-full bg-primary px-2 py-0.5">
+							<Text className="text-caption font-semibold text-white">
+								~{SIP_ANNUAL_RATE_PCT}% p.a.
+							</Text>
+						</View>
+					</View>
+					<Text className="text-h4 font-bold text-primaryDeep">
+						{projection > 0 ? `≈ ${formatINR(projection)}` : "—"}
+					</Text>
+					<Text className="text-caption text-textMuted">
+						{contribution > 0 && periods > 0
+							? `What ${formatINR(contribution)}/${unit} × ${periods} ${unitLabel} could grow to by ${monthYearLabel(targetDate)}`
+							: "Set your amount to see your potential returns"}
 					</Text>
 				</View>
 			</View>

@@ -1,5 +1,6 @@
 import { buildSeed, CIRCLES } from "../src/data/seed";
 import { formatINR, formatCompactINR } from "../src/lib/format";
+import { sipProjection } from "../src/lib/returns";
 import { getActiveMembers, getTotalInvested } from "../src/lib/stats";
 import {
 	getCircleStreak,
@@ -72,6 +73,11 @@ check("formatINR(100000) = ₹1,00,000", formatINR(100000), "₹1,00,000");
 check("formatCompactINR(100000) = ₹1L", formatCompactINR(100000), "₹1L");
 check("formatCompactINR(500000) = ₹5L", formatCompactINR(500000), "₹5L");
 check("formatCompactINR(25000) = ₹25K", formatCompactINR(25000), "₹25K");
+
+// ---- SIP projection ----
+check("sipProjection: ₹1,000/mo × 24 months grows past ₹24,000", sipProjection(1000, 24, 12) > 24000, true);
+check("sipProjection: ₹1,000/mo × 24 months ≈ ₹28,100", sipProjection(1000, 24, 12), 28135);
+check("sipProjection: ₹1,000/day × 365 days ≈ ₹3,93,900", sipProjection(1000, 365, 365), 393871);
 
 // ---- Create circle: total = amount × periods ----
 const monthly = createCircle(buildSeed(), "u_you", {

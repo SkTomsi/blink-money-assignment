@@ -4,6 +4,7 @@ import { Animated } from "react-native";
 import { CURRENT_USER } from "@/data/users";
 import { copyText } from "@/lib/clipboard";
 import { addMonths, durationInPeriods } from "@/lib/dates";
+import { sipProjection } from "@/lib/returns";
 import { useCircleStore, useUsers } from "@/store/useCircleStore";
 import type { Circle, User } from "@/types";
 import {
@@ -61,6 +62,17 @@ export function useCreateCircleFlow() {
 	const total = useMemo(
 		() => parseAmount(draft.contribution) * periods,
 		[draft.contribution, periods],
+	);
+
+	/** What the SIP could grow to at ~15% p.a. over the duration. */
+	const projection = useMemo(
+		() =>
+			sipProjection(
+				parseAmount(draft.contribution),
+				periods,
+				draft.frequency === "monthly" ? 12 : 365,
+			),
+		[draft.contribution, draft.frequency, periods],
 	);
 
 	const inviteLink = `blinkmoney.in/join/${slugOf(draft.name || "my-circle")}`;
@@ -179,6 +191,7 @@ export function useCreateCircleFlow() {
 		targetDate,
 		periods,
 		total,
+		projection,
 		inviteLink,
 		searchResults,
 		invitedUsers,

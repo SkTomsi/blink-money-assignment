@@ -1,7 +1,9 @@
 import { useRouter } from "expo-router";
 import { Animated, Pressable, ScrollView, Text, View } from "react-native";
 import { Button } from "@/components/ui/Button";
+import { durationInPeriods } from "@/lib/dates";
 import { formatINR } from "@/lib/format";
+import { SIP_ANNUAL_RATE_PCT, sipProjection } from "@/lib/returns";
 import type { Circle } from "@/types";
 import { monthYearLabel, periodLabel } from "../constants";
 
@@ -19,6 +21,17 @@ export function SuccessStep({
 	copied: boolean;
 }) {
 	const router = useRouter();
+
+	const periods = durationInPeriods(
+		circle.frequency,
+		circle.durationMonths,
+		circle.targetDate,
+	);
+	const projection = sipProjection(
+		circle.contributionAmount,
+		periods,
+		circle.frequency === "monthly" ? 12 : 365,
+	);
 
 	return (
 		<ScrollView
@@ -48,12 +61,12 @@ export function SuccessStep({
 						value={`≈ ${formatINR(circle.targetAmount)} by ${monthYearLabel(circle.targetDate)}`}
 					/>
 					<SummaryRow
+						label="Projected corpus"
+						value={`≈ ${formatINR(projection)} · ~${SIP_ANNUAL_RATE_PCT}% p.a.`}
+					/>
+					<SummaryRow
 						label="Members"
-						value={
-							memberCount > 0
-								? `You + ${memberCount} invited`
-								: "You"
-						}
+						value={memberCount > 0 ? `You + ${memberCount} invited` : "You"}
 					/>
 				</View>
 
@@ -67,10 +80,7 @@ export function SuccessStep({
 					</Text>
 				</Pressable>
 
-				<Button
-					label="Start investing"
-					onPress={() => router.replace("/")}
-				/>
+				<Button label="Start investing" onPress={() => router.replace("/")} />
 			</Animated.View>
 		</ScrollView>
 	);
