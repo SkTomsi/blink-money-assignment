@@ -206,3 +206,17 @@ export function useUnreadCount(): number {
 	const notifications = useNotifications();
 	return notifications.filter((n) => !n.read).length;
 }
+
+export function useDashboardStats() {
+	const db = useCircleStore((s) => s.db);
+	if (!db) {
+		return { totalInvested: 0, totalInvestments: 0, circleCount: 0 };
+	}
+	const mine = db.checkIns.filter((c) => c.userId === CURRENT_USER.id);
+	const totalInvested = mine.reduce((sum, c) => sum + c.amount, 0);
+	return {
+		totalInvested,
+		totalInvestments: mine.length,
+		circleCount: db.circles.length,
+	};
+}

@@ -1,8 +1,7 @@
 import { useRouter } from "expo-router";
 import { Pressable, Text, View } from "react-native";
 import { Avatar } from "@/components/ui/Avatar";
-import { ProgressBar } from "@/components/ui/ProgressBar";
-import { formatINR } from "@/lib/format";
+import { CURRENT_USER } from "@/data/users";
 import { useCircle, useMembers, useOverview, useUserMap } from "@/store/useCircleStore";
 
 const TYPE_LABELS: Record<string, string> = {
@@ -34,12 +33,9 @@ export function CircleCard({ circleId }: { circleId: string }) {
 
 	if (!circle || !overview) return null;
 
-	const { total, progress, goal, streak, atRisk } = overview;
-	const goalPct = Math.round(goal.pct * 100);
-	const periodPct = Math.round(progress.pct * 100);
-	const dueNames = progress.dueUserIds
-		.map((id) => users[id]?.name ?? "Someone")
-		.join(", ");
+	const { progress, streak, atRisk } = overview;
+	const selfDue = progress.dueUserIds.includes(CURRENT_USER.id);
+	const othersDue = progress.dueUserIds.filter((id) => id !== CURRENT_USER.id).length;
 
 	return (
 		<Pressable
@@ -75,51 +71,42 @@ export function CircleCard({ circleId }: { circleId: string }) {
 				) : null}
 			</View>
 
-			<View className="flex-row items-baseline justify-between">
-				<Text className="text-h4 font-bold tabular-nums text-textPrimary">
-					{formatINR(total)}{" "}
-					<Text className="text-caption font-medium text-textMuted">
-						/ {formatINR(circle.targetAmount)}
-					</Text>
-				</Text>
-				<Text className="text-caption font-semibold text-textMuted">
-					{goalPct}%
-				</Text>
-			</View>
-			<ProgressBar progress={goal.pct} />
-
 			<View className="flex-row items-center justify-between border-t border-border pt-3">
-				<Text className="text-caption text-textSecondary">
-					{FREQ_LABELS[circle.frequency]} · {formatINR(progress.invested)} /{" "}
-					{formatINR(progress.target)} ({periodPct}%)
-				</Text>
-				{progress.completedUserIds.length > 0 ? (
-					<View className="flex-row">
-						{progress.completedUserIds.slice(0, 3).map((id, i) => {
-							const user = users[id];
-							if (!user) return null;
-							return (
-								<View key={id} style={{ marginLeft: i === 0 ? 0 : -8 }}>
-									<Avatar color={user.avatarColor} name={user.name} size={22} />
-								</View>
-							);
-						})}
-					</View>
+				<View className="flex-row">
+					{members.slice(0, 5).map((m, i) => {
+						const user = users[m.userId];
+						if (!user) return null;
+						return (
+							<View key={m.id} style={{ marginLeft: i === 0 ? 0 : -8 }}>
+								<Avatar color={user.avatarColor} name={user.name} size={24} />
+							</View>
+						);
+					})}
+					{members.length > 5 ? (
+						<View
+							className="h-6 w-6 items-center justify-center rounded-full bg-border"
+							style={{ marginLeft: -8 }}
+						>
+							<Text className="text-micro font-bold text-textSecondary">
+								+{members.length - 5}
+							</Text>
+						</View>
+					) : null}
+				</View>
+				{othersDue > 0 ? (
+					<Text className="text-caption font-medium text-textSecondary">
+						{othersDue} to check in
+					</Text>
+				) : selfDue ? (
+					<Text className="text-caption font-medium text-primaryDeep">
+						{"You're due"}
+					</Text>
 				) : (
-					<Text className="text-caption text-textMuted">No check-ins yet</Text>
+					<Text className="text-caption font-medium text-primaryDeep">
+						All checked in ✓
+					</Text>
 				)}
 			</View>
-
-			{atRisk && dueNames ? (
-				<View className="gap-0.5 rounded-xl bg-red/10 px-3 py-2">
-					<Text className="text-caption font-semibold text-red">
-						⚠️ Streak at risk
-					</Text>
-					<Text className="text-caption text-textSecondary">
-						{dueNames} has not checked in yet
-					</Text>
-				</View>
-			) : null}
 		</Pressable>
 	);
 }
