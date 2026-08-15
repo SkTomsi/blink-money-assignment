@@ -1,6 +1,5 @@
-import { colors, colorsLight } from "@blink/theme";
 import { useState } from "react";
-import { Pressable, Switch, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { Avatar } from "@/components/ui/Avatar";
 import { Screen } from "@/components/ui/Screen";
 import { ScreenHeader } from "@/components/ui/ScreenHeader";
@@ -16,11 +15,8 @@ const THEME_OPTIONS: { key: ThemePreference; label: string }[] = [
 
 export default function ProfileScreen() {
 	const { isDark, preference, setPreference } = useTheme();
-	const offline = useCircleStore((s) => s.offline);
-	const setOffline = useCircleStore((s) => s.setOffline);
 	const reseed = useCircleStore((s) => s.reseed);
 	const [resetting, setResetting] = useState(false);
-	const pal = isDark ? colors : colorsLight;
 
 	const onReset = async () => {
 		setResetting(true);
